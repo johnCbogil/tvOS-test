@@ -1,6 +1,24 @@
 App.onLaunch = function(options) {
-  var alert = createAlert("Hello World", "Love, John");
-  navigationDocument.presentModal(alert);
+  // var alert = createAlert("Hello World", "Love, John");
+  // navigationDocument.presentModal(alert);
+  var javascriptFiles = [
+  `${options.BASEURL}js/ResourceLoader.js`,
+  `${options.BASEURL}js/Presenter.js`
+  ];
+  evaluateScripts(javascriptFiles, function(success) {
+    if(success) {
+      // 3
+      resourceLoader = new ResourceLoader(options.BASEURL);
+      resourceLoader.loadResource(`${options.BASEURL}templates/DevConTemplate.xml.js`, function(resource) {
+        var doc = Presenter.makeDocument(resource);
+        doc.addEventListener("select", Presenter.load.bind(Presenter));
+        Presenter.pushDocument(doc);
+      });
+    } else {
+      var errorDoc = createAlert("Evaluate Scripts Error", "Error attempting to evaluate external JavaScript files.");
+      navigationDocument.presentModal(errorDoc);
+    }
+  });
 }
  
 var createAlert = function(title, description) {
@@ -9,6 +27,9 @@ var createAlert = function(title, description) {
       <alertTemplate>
         <title>${title}</title>
         <description>${description}</description>
+        <button> 
+          <text>OK</text>
+        </button>
       </alertTemplate>
     </document>`
     var parser = new DOMParser();
